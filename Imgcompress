@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Compressor - Optimize Your Images Online</title>
+    <meta name="description" content="Free online image compressor for JPEG, PNG, and WEBP formats. Reduce image size while maintaining quality with our responsive compression tool.">
+    <meta name="keywords" content="image compressor, optimize images, reduce file size, online tool, JPEG compressor, PNG optimizer">
+    
+    <style>
+        :root {
+            --primary-color: #2ecc71;
+            --secondary-color: #e74c3c;
+            --accent-color: #f39c12;
+            --background: #f8f9fa;
+            --text-dark: #2c3e50;
+            --text-light: #ecf0f1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #f8f9fa 0%, #dfe6e9 100%);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .upload-section {
+            border: 2px dashed var(--primary-color);
+            background: rgba(46, 204, 113, 0.05);
+            border-radius: 8px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-section:hover {
+            background: rgba(46, 204, 113, 0.1);
+        }
+
+        .preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 2rem 0;
+        }
+
+        .preview-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 2px solid var(--primary-color);
+            padding: 5px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            color: var(--text-light);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+            margin-top: 15px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .slider-container {
+            margin: 15px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .slider {
+            width: 100%;
+            max-width: 300px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Compressor</h1>
+        <p>Optimize your images for web with adjustable compression levels</p>
+        <div class="upload-section" onclick="document.getElementById('fileInput').click();">
+            <input type="file" id="fileInput" accept="image/*" hidden>
+            <p>Click to upload or drag and drop files here</p>
+        </div>
+
+        <div class="slider-container">
+            <label for="qualitySlider">Compression Quality: <span id="qualityValue">60%</span></label>
+            <input type="range" id="qualitySlider" min="10" max="100" value="60" class="slider">
+        </div>
+
+        <div class="preview-container" id="previewContainer"></div>
+        <button class="btn" id="compressBtn" onclick="compressImage()">Compress Image</button>
+    </div>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.classList.add('preview-img');
+                    document.getElementById('previewContainer').innerHTML = '';
+                    document.getElementById('previewContainer').appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('qualitySlider').addEventListener('input', function() {
+            document.getElementById('qualityValue').innerText = this.value + '%';
+        });
+
+        function compressImage() {
+            const imgElement = document.querySelector('.preview-img');
+            if (!imgElement) {
+                alert('Please upload an image first.');
+                return;
+            }
+
+            const quality = document.getElementById('qualitySlider').value / 100;
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.src = imgElement.src;
+
+            img.onload = function() {
+                const maxWidth = 800;
+                const maxHeight = 800;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth || height > maxHeight) {
+                    const aspectRatio = width / height;
+                    if (width > height) {
+                        width = maxWidth;
+                        height = maxWidth / aspectRatio;
+                    } else {
+                        height = maxHeight;
+                        width = maxHeight * aspectRatio;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+
+                const previewContainer = document.getElementById('previewContainer');
+                previewContainer.innerHTML = '';
+
+                // Create compressed image preview
+                const compressedImg = document.createElement('img');
+                compressedImg.src = compressedDataUrl;
+                compressedImg.classList.add('preview-img');
+                previewContainer.appendChild(compressedImg);
+
+                // Replace compress button with download button
+                const compressBtn = document.getElementById('compressBtn');
+                compressBtn.style.display = 'none';
+
+                const downloadLink = document.createElement('a');
+                downloadLink.href = compressedDataUrl;
+                downloadLink.download = 'compressed-image.jpg';
+                downloadLink.innerText = 'Download Compressed Image';
+                downloadLink.classList.add('btn');
+
+                previewContainer.appendChild(downloadLink);
+            };
+        }
+    </script>
+</body>
+</html>
